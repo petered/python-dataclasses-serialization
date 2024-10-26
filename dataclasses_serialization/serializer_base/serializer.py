@@ -1,3 +1,4 @@
+import dataclasses
 from dataclasses import dataclass
 from typing import Union, Tuple, Mapping, Callable, TypeVar, Any, Generic, Dict, List
 
@@ -66,9 +67,10 @@ class Serializer(Generic[DataType, SerializedType]):
             deserialization_functions, is_subset=issubclass, is_element=issubclass
         )
 
-        self.serialization_functions.setdefault(
-            dataclass, lambda obj: self.serialize(dict_serialization(obj.__dict__))
-        )
+        def serfunc(obj):
+            return self.serialize(dict_serialization(dataclasses.asdict(obj)))
+
+        self.serialization_functions.setdefault(dataclass, serfunc)
 
         self.deserialization_functions.setdefault(
             dataclass, dict_to_dataclass(deserialization_func=self.deserialize)
